@@ -39,3 +39,18 @@ def test_approve_one_file_with_distractions(tmpdir):
 
     all_files = os.listdir(tmpdir)
     verify(str(all_files))
+
+
+def test_overwrite_approved(tmpdir):
+    received_file = os.path.join(tmpdir, "a.received.txt")
+    with open(received_file, "w") as f:
+        f.write("foo")
+    other_file = os.path.join(tmpdir, "a.approved.txt")
+    with open(other_file, "w") as f:
+        f.write("bar")
+
+    approve_all(tmpdir)
+
+    with open(other_file) as f:
+        contents = f.read()
+        assert contents == "foo"
