@@ -1,7 +1,7 @@
 from approvaltests import verify
 import os
 
-from clean_received import clean_received
+from clean_received import *
 
 
 def test_empty_dir(tmpdir):

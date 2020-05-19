@@ -7,7 +7,7 @@ import argparse
 
 
 def approve_all(directory, verbose=True):
-    regex = re.compile("(.*\.)received(\..*)")
+    regex = re.compile(r"(.*\.)received(\..*)")
     for root, dirs, files in os.walk(directory):
         for filename in files:
             matches = re.findall(regex, filename)
