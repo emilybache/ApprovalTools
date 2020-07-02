@@ -3,9 +3,7 @@
 import argparse
 import os
 import re
-import io
 import difflib
-from pprint import pprint
 
 
 class DiffGroup:
@@ -21,15 +19,6 @@ class DiffGroup:
 
     def __repr__(self):
         return repr(sorted(self.test_names))
-
-
-def analyze_diffs(failures):
-    diffs = {}
-    for test_name, diff in failures.items():
-        diffs[test_name] = diff
-
-    groups = analyze_groups(diffs)
-    return groups
 
 
 def analyze_groups(diffs):
@@ -68,7 +57,7 @@ def report_failures(failures):
     for test_name, diff in failures.items():
         result += f"{test_name}\n"
 
-    groups = analyze_diffs(failures)
+    groups = analyze_groups(failures)
     if groups:
         result += "\n-----------------\n"
         result += report_diffs(groups)
