@@ -52,12 +52,11 @@ def report_diffs(diff_groups):
     return result
 
 
-def report_failures(failures):
+def report_failures(failures, groups):
     result = "Failed tests:\n"
     for test_name, diff in failures.items():
         result += f"{test_name}\n"
 
-    groups = analyze_groups(failures)
     if groups:
         result += "\n-----------------\n"
         result += report_diffs(groups)
@@ -67,10 +66,10 @@ def report_failures(failures):
     return result
 
 
-def analyze(directory):
+def analyze(folder):
     regex = re.compile(r"(.*)\.received(\..*)")
     failures = {}
-    for root, dirs, files in os.walk(directory):
+    for root, dirs, files in os.walk(folder):
         for received_filename in files:
             matches = re.findall(regex, received_filename)
             if matches:
@@ -92,7 +91,8 @@ def analyze(directory):
     if not failures:
         return f"No failing tests found."
     else:
-        return report_failures(failures)
+        failure_groups = analyze_groups(failures)
+        return report_failures(failures, failure_groups)
 
 
 def create_diff(received_text, approved_text):
