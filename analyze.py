@@ -48,7 +48,7 @@ def analyze_groups(diffs):
 
 def report_diffs(diff_groups):
     result = ""
-    result += "Failures can be grouped.\n"
+    result += "Failures can be grouped. All tests in this list have exactly the same diff:\n"
     group_count = 0
     for group_name, group in diff_groups.items():
         result += f"Group #{group_count+1}:\n"
@@ -68,6 +68,7 @@ def report_failures(failures):
 
     groups = analyze_diffs(failures)
     if groups:
+        result += "\n-----------------\n"
         result += report_diffs(groups)
 
     result += "\n-----------------\n"
@@ -113,7 +114,9 @@ def create_diff(received_text, approved_text):
 if __name__ == "__main__":
     import sys
     parser = argparse.ArgumentParser()
-    parser.add_argument("directory", help="the directory where the test results are (it will also search subdirectories)")
+    parser.add_argument("directory",
+                        help="the directory where the test results are (it will also search subdirectories)",
+                        default=os.getcwd())
 
     args = parser.parse_args()
     directory = args.directory or os.getcwd()
@@ -123,4 +126,4 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     print(f"analyzing test results found in folder {directory}")
-    analyze(directory)
+    print(analyze(directory))
