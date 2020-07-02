@@ -1,4 +1,3 @@
-import os
 
 from approvaltests import verify
 from approve_all import *
