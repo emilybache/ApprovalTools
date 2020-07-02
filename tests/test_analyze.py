@@ -3,7 +3,7 @@ from pprint import pprint
 
 from approvaltests import verify
 
-from analyze import analyze, TestFailure, analyze_diffs, analyze_groups, DiffGroup, report_diffs
+from analyze import analyze, analyze_groups, DiffGroup, report_diffs, create_diff
 
 
 def test_empty_dir(tmpdir):
@@ -52,13 +52,13 @@ def write_approval_file(tmpdir, test_name, approval_file_type, file_contents):
 
 
 def test_find_diff_single_lines():
-    failure = TestFailure("foo\n", "bar\n")
-    verify(failure.find_diff())
+    failure = create_diff("foo\n", "bar\n")
+    verify(failure)
 
 
 def test_find_diff_multi_lines():
-    failure = TestFailure("foo\nbar\nbaz\n", "bar\n")
-    verify(failure.find_diff())
+    failure = create_diff("foo\nbar\nbaz\n", "bar\n")
+    verify(failure)
 
 
 def test_groups_two_tests_same_diff():
@@ -76,8 +76,8 @@ def test_groups_two_tests_different_diff():
 + foo
 """
     diff2 = """\
-    - baz
-    """
+- baz
+"""
 
     diffs = {"a": diff1, "b": diff2}
     verify(str(analyze_groups(diffs)))

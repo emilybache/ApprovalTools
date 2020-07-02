@@ -1,1 +1,1 @@
-{'- bar\n+ foo\n': ['a', 'e'], '- baz\n': ['c', 'd']}
+{'- bar\n+ foo\n': ['a', 'e'], '- baz\n': ['b', 'c', 'd']}

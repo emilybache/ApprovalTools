@@ -6,28 +6,6 @@ import difflib
 from pprint import pprint
 
 
-class TestFailure:
-    def __init__(self, received_text, approved_text):
-        self.received_text = received_text
-        self.approved_text = approved_text
-        self.diff = None
-
-    def find_diff(self):
-        if not self.diff:
-            self.diff = find_diff(self.received_text, self.approved_text)
-        return self.diff
-
-
-def find_diff(received_text, approved_text):
-    differ = difflib.Differ()
-    return "\n".join(
-            differ.compare(
-                approved_text.splitlines(),
-                received_text.splitlines()
-            )
-        )
-
-
 class DiffGroup:
     def __init__(self, diff, test_names=None):
         self.diff = diff
@@ -45,8 +23,7 @@ class DiffGroup:
 
 def analyze_diffs(failures):
     diffs = {}
-    for test_name, failure in failures.items():
-        diff = failure.find_diff()
+    for test_name, diff in failures.items():
         diffs[test_name] = diff
 
     groups = analyze_groups(diffs)
@@ -61,7 +38,10 @@ def analyze_groups(diffs):
                 continue
             # the diffs must be identical, not merely overlapping. This gives the test operator the best information
             if diff1 == diff2:
-                groups[diff1] = DiffGroup(diff1, [test_name1, test_name2])
+                if diff1 not in groups.keys():
+                    groups[diff1] = DiffGroup(diff1)
+                groups[diff1].add_test(test_name1)
+                groups[diff1].add_test(test_name2)
 
     return groups
 
@@ -83,7 +63,7 @@ def report_diffs(diff_groups):
 
 def report_failures(failures):
     result = "Failed tests:\n"
-    for test_name, failure in failures.items():
+    for test_name, diff in failures.items():
         result += f"{test_name}\n"
 
     groups = analyze_diffs(failures)
@@ -115,12 +95,19 @@ def analyze(directory):
                         approved_text = f.read()
                 else:
                     approved_text = ""
-                failures[test_name] = TestFailure(received_text, approved_text)
+                failures[test_name] = create_diff(received_text, approved_text)
 
     if not failures:
         return f"No failing tests found."
     else:
         return report_failures(failures)
+
+
+def create_diff(received_text, approved_text):
+    differ = difflib.Differ()
+    diff = "\n".join(differ.compare(approved_text.splitlines(),
+                                    received_text.splitlines()))
+    return diff
 
 
 if __name__ == "__main__":
