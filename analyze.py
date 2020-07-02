@@ -74,12 +74,13 @@ def analyze(folder):
             matches = re.findall(regex, received_filename)
             if matches:
                 test_name = matches[0][0]
+                file_extension_including_dot = matches[0][1]
 
                 received_file = str(os.path.join(root, received_filename))
                 with open(received_file, encoding="utf-8") as f:
                     received_text = f.readlines()
 
-                approved_filename = test_name + ".approved" + matches[0][1]
+                approved_filename = test_name + ".approved" + file_extension_including_dot
                 approved_file = str(os.path.join(root, approved_filename))
                 if os.path.exists(approved_file):
                     with open(approved_file, encoding="utf-8") as f:

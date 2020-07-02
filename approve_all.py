@@ -7,18 +7,21 @@ import argparse
 
 
 def approve_all(directory, verbose=True):
-    regex = re.compile(r"(.*\.)received(\..*)")
+    regex = re.compile(r"(.*)\.received(\..*)")
     for root, dirs, files in os.walk(directory):
         for filename in files:
             matches = re.findall(regex, filename)
             if matches:
-                new_filename = matches[0][0] + "approved" + matches[0][1]
+                test_name = matches[0][0]
+                file_extension_including_dot = matches[0][1]
+
+                new_filename = test_name + ".approved" + file_extension_including_dot
                 received_file = str(os.path.join(root, filename))
                 approved_file = str(os.path.join(root, new_filename))
                 shutil.copyfile(received_file,
                                 approved_file)
                 if verbose:
-                    print(f"approving {matches[0][0]}")
+                    print(f"approving {test_name}")
 
 
 if __name__ == "__main__":

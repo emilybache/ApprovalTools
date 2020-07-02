@@ -6,15 +6,18 @@ import re
 
 
 def clean_received(directory, verbose=True):
-    regex = re.compile(r"(.*)\.received\.(.*)")
+    regex = re.compile(r"(.*)\.received(\..*)")
     for root, dirs, files in os.walk(directory):
         for filename in files:
             matches = re.findall(regex, filename)
             if matches:
+                test_name = matches[0][0]
+                file_extension_including_dot = matches[0][1]
+
                 received_file = str(os.path.join(root, filename))
                 os.remove(received_file)
                 if verbose:
-                    print(f"removed {matches[0][0]}.received.{matches[0][1]}")
+                    print(f"removed {test_name}.received{file_extension_including_dot}")
 
 
 if __name__ == "__main__":
