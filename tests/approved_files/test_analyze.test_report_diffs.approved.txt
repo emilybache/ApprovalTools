@@ -1,0 +1,13 @@
+Failures can be grouped.
+Group #1:
+a
+b
+All share this diff:
++ foo
+
+Group #2:
+a
+c
+All share this diff:
+- bar
+
