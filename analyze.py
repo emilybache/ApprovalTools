@@ -54,7 +54,7 @@ def report_diffs(diff_groups):
 
 def report_failures(failures, groups):
     result = "Failed tests:\n"
-    for test_name, diff in failures.items():
+    for test_name, _ in failures.items():
         result += f"{test_name}\n"
 
     if groups:
@@ -77,13 +77,13 @@ def analyze(folder):
 
                 received_file = str(os.path.join(root, received_filename))
                 with open(received_file, encoding="utf-8") as f:
-                    received_text = f.read()
+                    received_text = f.readlines()
 
                 approved_filename = test_name + ".approved" + matches[0][1]
                 approved_file = str(os.path.join(root, approved_filename))
                 if os.path.exists(approved_file):
                     with open(approved_file, encoding="utf-8") as f:
-                        approved_text = f.read()
+                        approved_text = f.readlines()
                 else:
                     approved_text = ""
                 failures[test_name] = create_diff(received_text, approved_text)
@@ -97,8 +97,7 @@ def analyze(folder):
 
 def create_diff(received_text, approved_text):
     differ = difflib.Differ()
-    diff = "\n".join(differ.compare(approved_text.splitlines(),
-                                    received_text.splitlines()))
+    diff = "".join(differ.compare(approved_text, received_text))
     return diff
 
 

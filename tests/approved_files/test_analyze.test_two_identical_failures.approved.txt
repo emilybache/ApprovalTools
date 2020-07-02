@@ -1,0 +1,16 @@
+Failed tests:
+a
+b
+
+-----------------
+Failures can be grouped. All tests in this list have exactly the same diff:
+Group #1:
+a
+b
+All share this diff:
+- bar
++ foo
+
+
+-----------------
+Total test failure count: 2

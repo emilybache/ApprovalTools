@@ -26,6 +26,17 @@ def test_one_failure(tmpdir):
     verify(analysis)
 
 
+def test_two_identical_failures(tmpdir):
+    test_name = "a"
+    write_received_file(tmpdir, test_name, "foo\n")
+    write_approved_file(tmpdir, test_name, "bar\n")
+    test_name = "b"
+    write_received_file(tmpdir, test_name, "foo\n")
+    write_approved_file(tmpdir, test_name, "bar\n")
+    analysis = analyze(tmpdir)
+    verify(analysis)
+
+
 def test_missing_approved_file(tmpdir):
     test_name = "a"
     write_received_file(tmpdir, test_name, "foo")
@@ -51,12 +62,12 @@ def write_approval_file(tmpdir, test_name, approval_file_type, file_contents):
 
 
 def test_find_diff_single_lines():
-    failure = create_diff("foo\n", "bar\n")
+    failure = create_diff("foo\n".splitlines(True), "bar\n".splitlines(True))
     verify(failure)
 
 
 def test_find_diff_multi_lines():
-    failure = create_diff("foo\nbar\nbaz\n", "bar\n")
+    failure = create_diff("foo\nbar\nbaz\n".splitlines(True), "bar\n".splitlines(True))
     verify(failure)
 
 
