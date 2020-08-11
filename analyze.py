@@ -111,7 +111,7 @@ def read_lines_from_file(received_file):
 
 def identical(diff1, diff2):
     if diff1 == diff2:
-        return "All share this diff", diff1
+        return "They share this diff", diff1
     return None, None
 
 
@@ -121,12 +121,12 @@ def similar(diff1, diff2):
         return None, None
 
     if added_lines(diff1) == added_lines(diff2):
-        return "both have added lines", added_lines(diff1)
+        return "They have added lines", added_lines(diff1)
     if removed_lines(diff1) == removed_lines(diff2):
-        return "both have removed lines", removed_lines(diff1)
+        return "They have removed lines", removed_lines(diff1)
 
     if diff1 in diff2:
-        return "there are similar lines", diff1
+        return "There are similar lines", diff1
     return None, None
 
 def added_lines(diff):
