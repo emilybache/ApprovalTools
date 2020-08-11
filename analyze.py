@@ -21,14 +21,13 @@ class DiffGroup:
         return repr(sorted(self.test_names))
 
 
-def analyze_groups(diffs):
+def analyze_groups(diffs, comparison_function):
     groups = {}
     for test_name1, diff1 in diffs.items():
         for test_name2, diff2 in diffs.items():
             if test_name1 == test_name2:
                 continue
-            # the diffs must be identical, not merely overlapping. This gives the test operator the best information
-            if diff1 == diff2:
+            if comparison_function(diff1, diff2):
                 if diff1 not in groups.keys():
                     groups[diff1] = DiffGroup(diff1)
                 groups[diff1].add_test(test_name1)
@@ -39,7 +38,6 @@ def analyze_groups(diffs):
 
 def report_diffs(diff_groups):
     result = ""
-    result += "Failures can be grouped. All tests in this list have exactly the same diff:\n"
     group_count = 0
     for group_name, group in diff_groups.items():
         result += f"Group #{group_count+1}:\n"
@@ -52,14 +50,19 @@ def report_diffs(diff_groups):
     return result
 
 
-def report_failures(failures, groups):
+def report_failures(failures, identical_groups, similar_groups):
     result = "Failed tests:\n"
     for test_name, _ in failures.items():
         result += f"{test_name}\n"
 
-    if groups:
+    if identical_groups:
         result += "\n-----------------\n"
-        result += report_diffs(groups)
+        result += "Failures can be grouped. All tests in this list have exactly the same diff:\n"
+        result += report_diffs(identical_groups)
+    if similar_groups:
+        result += "\n-----------------\n"
+        result += "Additionally, tests in this list have similarities in their diffs\n"
+        result += report_diffs(similar_groups)
 
     result += "\n-----------------\n"
     result += f"Total test failure count: {len(failures)}"
@@ -92,8 +95,23 @@ def analyze(folder):
     if not failures:
         return f"No failing tests found."
     else:
-        failure_groups = analyze_groups(failures)
-        return report_failures(failures, failure_groups)
+        identical_failure_groups = analyze_groups(failures, identical)
+        similar_failure_groups = analyze_groups(failures, similar)
+        return report_failures(failures, identical_failure_groups, similar_failure_groups)
+
+
+def identical(diff1, diff2):
+    return diff1 == diff2
+
+
+def similar(diff1, diff2):
+    if identical(diff1, diff2):
+        return False
+
+    for line in diff1.splitlines():
+        if line in diff2:
+            return True
+    return False
 
 
 def create_diff(received_text, approved_text):

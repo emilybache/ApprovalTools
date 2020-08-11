@@ -2,7 +2,7 @@ import os
 
 from approvaltests import verify
 
-from analyze import analyze, analyze_groups, DiffGroup, report_diffs, create_diff
+from analyze import analyze, analyze_groups, DiffGroup, report_diffs, create_diff, identical
 
 
 def test_empty_dir(tmpdir):
@@ -77,8 +77,7 @@ def test_groups_two_tests_same_diff():
 + foo
 """
     diffs = {"a": diff1, "b": diff1}
-    verify(str(analyze_groups(diffs)))
-
+    verify(str(analyze_groups(diffs, identical)))
 
 def test_groups_two_tests_different_diff():
     diff1 = """\
@@ -90,7 +89,7 @@ def test_groups_two_tests_different_diff():
 """
 
     diffs = {"a": diff1, "b": diff2}
-    verify(str(analyze_groups(diffs)))
+    verify(str(analyze_groups(diffs, identical)))
 
 
 def test_groups_larger_number_of_tests():
@@ -103,7 +102,7 @@ def test_groups_larger_number_of_tests():
 """
 
     diffs = {"a": diff1, "b": diff2, "c": diff2, "d": diff2, "e": diff1}
-    verify(str(analyze_groups(diffs)))
+    verify(str(analyze_groups(diffs, identical)))
 
 
 def test_overlapping_diffs():
@@ -116,7 +115,7 @@ def test_overlapping_diffs():
 """
 
     diffs = {"a": diff1, "b": diff2}
-    verify(str(analyze_groups(diffs)))
+    verify(str(analyze_groups(diffs, identical)))
 
 
 def test_multiple_overlapping_diffs():
@@ -131,7 +130,7 @@ def test_multiple_overlapping_diffs():
 - bar
 """
     diffs = {"a": diff1, "b": diff2, "c": diff3}
-    verify(str(analyze_groups(diffs)))
+    verify(str(analyze_groups(diffs, identical)))
 
 
 def test_report_diffs():

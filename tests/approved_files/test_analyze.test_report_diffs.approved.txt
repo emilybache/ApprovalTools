@@ -1,4 +1,3 @@
-Failures can be grouped. All tests in this list have exactly the same diff:
 Group #1:
 a
 b
