@@ -7,7 +7,8 @@ import difflib
 
 
 class DiffGroup:
-    def __init__(self, diff, test_names=None):
+    def __init__(self, group_type, diff, test_names=None):
+        self.group_type = group_type
         self.diff = diff
         if test_names:
             self.test_names = set(test_names)
@@ -21,29 +22,15 @@ class DiffGroup:
         return repr(sorted(self.test_names))
 
 
-def analyze_groups(diffs, comparison_function):
-    groups = {}
-    for test_name1, diff1 in diffs.items():
-        for test_name2, diff2 in diffs.items():
-            if test_name1 == test_name2:
-                continue
-            if comparison_function(diff1, diff2):
-                if diff1 not in groups.keys():
-                    groups[diff1] = DiffGroup(diff1)
-                groups[diff1].add_test(test_name1)
-                groups[diff1].add_test(test_name2)
-
-    return groups
-
 
 def report_diffs(diff_groups):
     result = ""
     group_count = 0
     for group_name, group in diff_groups.items():
-        result += f"Group #{group_count+1}:\n"
+        result += f"Group #{group_count+1} ({len(group.test_names)} tests):\n"
         result += "\n".join(sorted(group.test_names))
-        result += f"\nAll share this diff:\n"
-        result += group.diff
+        result += f"\n{group.group_type}:\n"
+        result += f"{group.diff}"
         result += "\n"
         group_count += 1
 
@@ -80,17 +67,15 @@ def analyze(folder):
                 file_extension_including_dot = matches[0][1]
 
                 received_file = str(os.path.join(root, received_filename))
-                with open(received_file, encoding="utf-8") as f:
-                    received_text = f.readlines()
+                received_text = read_lines_from_file(received_file)
 
                 approved_filename = test_name + ".approved" + file_extension_including_dot
                 approved_file = str(os.path.join(root, approved_filename))
                 if os.path.exists(approved_file):
-                    with open(approved_file, encoding="utf-8") as f:
-                        approved_text = f.readlines()
+                    approved_text = read_lines_from_file(approved_file)
                 else:
                     approved_text = ""
-                failures[test_name] = create_diff(received_text, approved_text)
+                failures[test_name] = reduce_diff(create_diff(received_text, approved_text))
 
     if not failures:
         return f"No failing tests found."
@@ -99,26 +84,77 @@ def analyze(folder):
         similar_failure_groups = analyze_groups(failures, similar)
         return report_failures(failures, identical_failure_groups, similar_failure_groups)
 
+def analyze_groups(diffs, comparison_function):
+    groups = {}
+    for test_name1, diff1 in diffs.items():
+        for test_name2, diff2 in diffs.items():
+            if test_name1 == test_name2:
+                continue
+            group_type, diff  = comparison_function(diff1, diff2)
+            if group_type is not None:
+                group_name = f"{group_type}{diff}"
+                if group_name not in groups.keys():
+                    groups[group_name] = DiffGroup(group_type, diff)
+                groups[group_name].add_test(test_name1)
+                groups[group_name].add_test(test_name2)
+
+    return groups
+
+
+def read_lines_from_file(received_file):
+    with open(received_file, encoding="utf-8") as f:
+        received_text = f.readlines()
+        if received_text and not received_text[-1].endswith('\n'):
+            received_text[-1] = received_text[-1] + '\n'
+    return received_text
+
 
 def identical(diff1, diff2):
-    return diff1 == diff2
+    if diff1 == diff2:
+        return "All share this diff", diff1
+    return None, None
 
 
 def similar(diff1, diff2):
-    if identical(diff1, diff2):
-        return False
+    diff_type, diff = identical(diff1, diff2)
+    if diff_type is not None:
+        return None, None
 
-    for line in diff1.splitlines():
-        if line in diff2:
-            return True
-    return False
+    if added_lines(diff1) == added_lines(diff2):
+        return "both have added lines", added_lines(diff1)
+    if removed_lines(diff1) == removed_lines(diff2):
+        return "both have removed lines", removed_lines(diff1)
 
+    if diff1 in diff2:
+        return "there are similar lines", diff1
+    return None, None
+
+def added_lines(diff):
+    added = lines_with_prefix(diff, "+ ")
+    return added
+
+def removed_lines(diff):
+    removed = lines_with_prefix(diff, "- ")
+    return removed
+
+def lines_with_prefix(diff, prefix):
+    added = filter(lambda line: line[:2] == prefix, diff.splitlines())
+    return list(map(lambda line: line + "\n", added))
 
 def create_diff(received_text, approved_text):
     differ = difflib.Differ()
     diff = "".join(differ.compare(approved_text, received_text))
     return diff
 
+
+def reduce_diff(diff):
+    """remove the lines added for context and just keep the lines that show the actual differences """
+    new_diff = ""
+    for line in diff.splitlines():
+        if line[:2] in ["  ", "? "]:
+            continue
+        new_diff += line + "\n"
+    return new_diff
 
 if __name__ == "__main__":
     import sys

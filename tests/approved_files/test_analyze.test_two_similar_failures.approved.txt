@@ -1,0 +1,14 @@
+Failed tests:
+a
+b
+
+-----------------
+Additionally, tests in this list have similarities in their diffs
+Group #1 (2 tests):
+a
+b
+both have added lines:
+['+ foo\n']
+
+-----------------
+Total test failure count: 2

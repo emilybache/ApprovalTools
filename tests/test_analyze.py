@@ -2,7 +2,7 @@ import os
 
 from approvaltests import verify
 
-from analyze import analyze, analyze_groups, DiffGroup, report_diffs, create_diff, identical
+from analyze import analyze, analyze_groups, DiffGroup, report_diffs, create_diff, identical, similar, reduce_diff
 
 
 def test_empty_dir(tmpdir):
@@ -33,6 +33,56 @@ def test_two_identical_failures(tmpdir):
     test_name = "b"
     write_received_file(tmpdir, test_name, "foo\n")
     write_approved_file(tmpdir, test_name, "bar\n")
+    analysis = analyze(tmpdir)
+    verify(analysis)
+
+
+def test_two_similar_failures(tmpdir):
+    test_name = "a"
+    write_received_file(tmpdir, test_name, "foo\n")
+    write_approved_file(tmpdir, test_name, "bar\nbaz\n")
+    test_name = "b"
+    write_received_file(tmpdir, test_name, "foo\n")
+    write_approved_file(tmpdir, test_name, "bar\n")
+    analysis = analyze(tmpdir)
+    verify(analysis)
+
+def test_create_diff_supermarket():
+    diff = reduce_diff("""\
+  apples                             11.94
+    1.99 * 6.000
+  5 for 5.99(apples)                 -3.96
+- 
++ ----------------------------------------
+  Total:                              7.98
+""")
+    assert diff == "- \n+ ----------------------------------------\n"
+
+def test_supermarket_failure(tmpdir):
+    test_name = "a"
+    write_received_file(tmpdir, test_name, """\
+apples                             11.94
+  1.99 * 6.000
+5 for 5.99(apples)                 -3.96
+----------------------------------------
+Total:                              7.98
+""")
+    write_approved_file(tmpdir, test_name, """\
+apples                             11.94
+  1.99 * 6.000
+5 for 5.99(apples)                 -3.96
+
+Total:                              7.98""")
+    test_name = "b"
+    write_received_file(tmpdir, test_name, """\
+toothbrush                          0.99
+----------------------------------------
+Total:                              0.99
+""")
+    write_approved_file(tmpdir, test_name, """\
+toothbrush                          0.99
+
+Total:                              0.99""")
     analysis = analyze(tmpdir)
     verify(analysis)
 
@@ -136,5 +186,5 @@ def test_multiple_overlapping_diffs():
 def test_report_diffs():
     diff1 = '+ foo\n'
     diff2 = '- bar\n'
-    diffs = {diff1: DiffGroup(diff1, ['a', 'b']), diff2: DiffGroup(diff2, ['a', 'c'])}
+    diffs = {diff1: DiffGroup("All share this diff", diff1, ['a', 'b']), diff2: DiffGroup("All share this diff", diff2, ['a', 'c'])}
     verify(report_diffs(diffs))

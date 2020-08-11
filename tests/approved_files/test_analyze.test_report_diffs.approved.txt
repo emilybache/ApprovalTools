@@ -1,10 +1,10 @@
-Group #1:
+Group #1 (2 tests):
 a
 b
 All share this diff:
 + foo
 
-Group #2:
+Group #2 (2 tests):
 a
 c
 All share this diff:

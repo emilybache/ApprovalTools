@@ -1,1 +1,1 @@
-{'- bar\n+ foo\n': ['a', 'e'], '- baz\n': ['b', 'c', 'd']}
+{'All share this diff- bar\n+ foo\n': ['a', 'e'], 'All share this diff- baz\n': ['b', 'c', 'd']}
