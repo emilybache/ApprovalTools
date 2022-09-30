@@ -22,12 +22,11 @@ class DiffGroup:
         return repr(sorted(self.test_names))
 
 
-
 def report_diffs(diff_groups):
     result = ""
     group_count = 0
     for group_name, group in diff_groups.items():
-        result += f"Group #{group_count+1} ({len(group.test_names)} tests):\n"
+        result += f"Group #{group_count + 1} ({len(group.test_names)} tests):\n"
         result += "\n".join(sorted(group.test_names))
         result += f"\n{group.group_type}:\n"
         result += f"{group.diff}"
@@ -70,9 +69,13 @@ def analyze(folder):
                 received_text = read_lines_from_file(received_file)
 
                 approved_filename = test_name + ".approved" + file_extension_including_dot
+                verified_filename = test_name + ".verified" + file_extension_including_dot
                 approved_file = str(os.path.join(root, approved_filename))
+                verified_file = str(os.path.join(root, verified_filename))
                 if os.path.exists(approved_file):
                     approved_text = read_lines_from_file(approved_file)
+                elif os.path.exists(verified_file):
+                    approved_text = read_lines_from_file(verified_file)
                 else:
                     approved_text = ""
                 failures[test_name] = reduce_diff(create_diff(received_text, approved_text))
@@ -84,13 +87,14 @@ def analyze(folder):
         similar_failure_groups = analyze_groups(failures, similar)
         return report_failures(failures, identical_failure_groups, similar_failure_groups)
 
+
 def analyze_groups(diffs, comparison_function):
     groups = {}
     for test_name1, diff1 in diffs.items():
         for test_name2, diff2 in diffs.items():
             if test_name1 == test_name2:
                 continue
-            group_type, diff  = comparison_function(diff1, diff2)
+            group_type, diff = comparison_function(diff1, diff2)
             if group_type is not None:
                 group_name = f"{group_type}{diff}"
                 if group_name not in groups.keys():
@@ -129,17 +133,21 @@ def similar(diff1, diff2):
         return "There are similar lines", diff1
     return None, None
 
+
 def added_lines(diff):
     added = lines_with_prefix(diff, "+ ")
     return added
+
 
 def removed_lines(diff):
     removed = lines_with_prefix(diff, "- ")
     return removed
 
+
 def lines_with_prefix(diff, prefix):
     added = filter(lambda line: line[:2] == prefix, diff.splitlines())
     return list(map(lambda line: line + "\n", added))
+
 
 def create_diff(received_text, approved_text):
     differ = difflib.Differ()
@@ -156,8 +164,10 @@ def reduce_diff(diff):
         new_diff += line + "\n"
     return new_diff
 
+
 if __name__ == "__main__":
     import sys
+
     parser = argparse.ArgumentParser()
     parser.add_argument("directory",
                         help="the directory where the test results are (it will also search subdirectories)",
