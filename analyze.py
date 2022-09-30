@@ -63,6 +63,8 @@ def analyze(folder):
             matches = re.findall(regex, received_filename)
             if matches:
                 test_name = matches[0][0]
+                if test_name.endswith("DotNet6_0"):
+                    test_name = test_name.replace(".DotNet6_0", "")
                 file_extension_including_dot = matches[0][1]
 
                 received_file = str(os.path.join(root, received_filename))
